@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <style>
+            img {
+                height: 256px;
+                width: 256px;
+            }
+        </style>
+        <script>
+            window.onload = function() {
+                const opacity_strings = ["0", "0.3", "0.5", "0.6", "0.7", "1"];
+                const opacity_floats = opacity_strings.map(str => parseFloat(str));
+                const len = opacity_strings.length;
+                var layers = [];
+                const lirr = document.getElementById("LIRR-yard");
+                for(let o of opacity_strings) {
+                    var layer = document.createElement("div");
+                    layer.setAttribute("id", o);
+                    layer.style.opacity = 0;
+                    for(let i=0; i<=1; i++) {
+                        for(let j=1-i; j<=2-i; j++) {
+                            let tile_bg = document.createElement("img");
+                            tile_bg.setAttribute("src", "./OSM-base/" + i + "" + j + ".png");
+                            tile_bg.style.position = "absolute";
+                            tile_bg.style.top = 256 * i;
+                            tile_bg.style.left = 256 * j;
+                            layer.appendChild(tile_bg);
+                            let tile_orm = tile_bg.cloneNode();
+                            tile_orm.setAttribute("src", "./" + o + "/" + i + "" + j + ".png");
+                            layer.appendChild(tile_orm);
+                        }
+                    }
+                    lirr.appendChild(layer);
+                    layers.push(layer);
+                }
+                document.getElementById("0.5").style.opacity = 1;
+
+                const lin = document.createElement("div");
+                lin.setAttribute("id", "linear")
+                lin.style.mixBlendMode = "difference";
+                for(let o = 0; o <= 1; o++) {
+                    var layer_simple = document.createElement("div");
+                    layer_simple.setAttribute("id", "linear" + o);
+                    for(let i=0; i<=1; i++) {
+                        for(let j=1-i; j<=2-i; j++) {
+                            let tile_bg = document.createElement("img");
+                            tile_bg.setAttribute("src", "./OSM-base/" + i + "" + j + ".png");
+                            tile_bg.style.position = "absolute";
+                            tile_bg.style.top = 256 * i;
+                            tile_bg.style.left = 256 * j;
+                            layer_simple.appendChild(tile_bg);
+                            let tile_orm = tile_bg.cloneNode();
+                            tile_orm.setAttribute("src", "./" + o + "/" + i + "" + j + ".png");
+                            layer_simple.appendChild(tile_orm);
+                        }
+                    }
+                    lin.appendChild(layer_simple);
+                }
+                layer_simple.style.opacity = 0.5;
+                lirr.appendChild(lin);
+
+                const slider = document.getElementById("opacity-slider");
+                const opacity_print = document.getElementById("opacity-print");
+                slider.oninput = function() {
+                    const val = this.value;
+                    let n = 1;
+                    while(opacity_floats[n] < val) {
+                        n++;
+                    }
+                    for(let i=0; i<n-1; i++) {
+                        layers[i].style.opacity = 0;
+                    }
+                    const o_higher = (val - opacity_floats[n-1]) / (opacity_floats[n] - opacity_floats[n-1]);
+                    layers[n-1].style.opacity = 1;
+                    layers[n].style.opacity = o_higher;
+                    for(let i=n+1; i<len; i++) {
+                        layers[i].style.opacity = 0;
+                    }
+                    opacity_print.innerHTML = val;
+                    layer_simple.style.opacity = val;
+                }
+                slider.value = 0.5;
+            }
+        </script>
+    </head>
+    <body>
+        blend mode:
+        <input type="radio" id="normal" name="blending" value="normal" oninput="document.getElementById('linear').style.mixBlendMode = 'normal'"> <label for="normal">normal</label>
+        <input type="radio" id="diff" name="blending" value="diff" checked oninput="document.getElementById('linear').style.mixBlendMode = 'difference'"> <label for="diff">difference</label>
+        <br>
+        <input id="opacity-slider" type="range" min="0" max="1" step="0.01">
+        <br>
+        opacity:
+        <span id="opacity-print">0.5</span>
+        <div id="LIRR-yard" style="width: 768px; margin: auto; position: relative;">
+            <img style="position: absolute; top:0px; left:0px;" src="./OSM-base/00.png">
+            <img style="position: absolute; top:256px; left:512px;" src="./OSM-base/12.png">
+            <img style="position: absolute; top:0px; left:0px;" src="./common/00.png">
+            <img style="position: absolute; top:256px; left:512px;" src="./common/12.png">
+        </div>
+    </body>
+</html>
